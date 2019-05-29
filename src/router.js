@@ -12,10 +12,12 @@ export default class IRouter extends React.Component {
       <HashRouter>
         <App>
           <Route path="/login" component={Login}/>
-          <Route path="/admin" render={()=>
+          <Route path="/admin" render={() =>
             <Admin>
-              <Route path="/admin/ui/buttons" component={Buttons}></Route>
-              <Route component={NoMatch}></Route>
+              <Switch>
+                <Route path="/admin/ui/buttons" component={Buttons}></Route>
+                <Route component={NoMatch}></Route>
+              </Switch>
             </Admin>
           }/>
           <Route path="/order/detail" component={Login}></Route>
