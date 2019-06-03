@@ -6,6 +6,8 @@ const TabPane = Tabs.TabPane;
 
 export default class Modals extends React.Component {
 
+  newTabIndex = 0;
+
   handleCallback = (key) => {
     message.info("Hi,您选择了页签：" + key);
   }
@@ -48,7 +50,7 @@ export default class Modals extends React.Component {
   add = () => {
     const panes = this.state.panes;
     const activeKey = `newTab${this.newTabIndex++}`;
-    panes.push({title: 'New Tab', content: 'New Tab Pane', key: activeKey});
+    panes.push({title: activeKey, content: 'New Tab Pane', key: activeKey});
     this.setState({panes, activeKey});
   };
 
