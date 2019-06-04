@@ -1,7 +1,18 @@
 import React from 'react'
-import {Card, Form, Input, Button} from 'antd'
+import {Card, Form, Input, Button, message, Icon, Checkbox} from 'antd'
 const FormItem = Form.Item;
 class FormLogin extends React.Component {
+
+  handleSubmit = () => {
+    debugger
+    let userInfo = this.props.form.getFieldsValue();
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        message.success(`${userInfo.userName} 恭喜你，您通过本次表单组件学习，当前密码为：${userInfo.userPwd}`);
+      }
+    });
+  }
+
   render() {
     const { getFieldDecorator } = this.props.form;
     return (
@@ -24,25 +35,52 @@ class FormLogin extends React.Component {
             <FormItem>
               {
                 getFieldDecorator('userName',{
-                  initialValue: 'Jack',
-                  rules: []
+                  initialValue: '',
+                  rules: [
+                    {
+                      required: true,
+                      message: '用户名不能为空'
+                    },
+                    {
+                      min: 5,
+                      max: 10,
+                      message: '长度不在范围内'
+                    },
+                    {
+                      // pattern: /^\w+$/g,
+                      pattern: new RegExp('^\\w+$', 'g'),
+                      message: '用户名必须为字母或者数字'
+                    }
+                  ]
                 })(
-                  <Input placeholder="请输入用户名"></Input>
+                  <Input prefix={<Icon type="user"/>} placeholder="请输入用户名"></Input>
                 )
               }
             </FormItem>
             <FormItem>
               {
                 getFieldDecorator('userPwd',{
-                  initialValue: '123456',
+                  initialValue: '',
                   rules: []
                 })(
-                  <Input placeholder="请输入密码"></Input>
+                  <Input prefix={<Icon type="lock"/>} placeholder="请输入密码"></Input>
                 )
               }
             </FormItem>
             <FormItem>
-              <Button type="primary">登录</Button>
+              {
+                getFieldDecorator('remember',{
+                  valuePropName: 'checked',
+                  initialValue: true,
+                  rules: []
+                })(
+                  <Checkbox>记住密码</Checkbox>
+                )
+              }
+              <a href="#" style={{float:'right'}}>忘记密码</a>
+            </FormItem>
+            <FormItem>
+              <Button type="primary" onClick={this.handleSubmit}>登录</Button>
             </FormItem>
           </Form>
         </Card>
