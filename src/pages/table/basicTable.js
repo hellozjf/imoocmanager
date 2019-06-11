@@ -1,5 +1,5 @@
 import React from 'react'
-import {Card, Table} from "antd";
+import {Card, Table, Modal} from "antd";
 import axios from './../../axios/index'
 
 export default class FormLogin extends React.Component {
@@ -41,6 +41,9 @@ export default class FormLogin extends React.Component {
         time: '09:00'
       }
     ]
+    dataSource.map((item, index)=>{
+      item.key = index;
+    })
     this.setState({
       dataSource: dataSource
     })
@@ -54,15 +57,31 @@ export default class FormLogin extends React.Component {
       data: {
         params: {
           page: 1
-        }
+        },
+        isShowLoading: false
       }
     }).then((res) => {
       if (res.code == 0) {
+        res.data.map((item, index) => {
+          item.key = index
+        })
         this.setState({
           dataSource2: res.data
         })
       }
     });
+  }
+
+  onRowClick = (record, index) => {
+    let selectKey = [index];
+    Modal.info({
+      title:'信息',
+      content:`用户名：${record.userName}, 用户爱好：${record.interest}`
+    });
+    this.setState({
+      selectedRowKeys: selectKey,
+      selectedItem: record
+    })
   }
 
   render() {
@@ -77,15 +96,41 @@ export default class FormLogin extends React.Component {
       },
       {
         title: '性别',
-        dataIndex: 'sex'
+        dataIndex: 'sex',
+        render(sex) {
+          return sex == 1 ? '男' : '女'
+        }
       },
       {
         title: '状态',
-        dataIndex: 'state'
+        dataIndex: 'state',
+        render(state) {
+          let config = {
+            '1': '咸鱼一条',
+            '2': '风华浪子',
+            '3': '北大才子',
+            '4': '百度FE',
+            '5': '创业者'
+          };
+          return config[state];
+        }
       },
       {
         title: '爱好',
-        dataIndex: 'interest'
+        dataIndex: 'interest',
+        render(abc) {
+          let config = {
+            '1': '游泳',
+            '2': '打篮球',
+            '3': '踢足球',
+            '4': '跑步',
+            '5': '爬山',
+            '6': '骑行',
+            '7': '桌球',
+            '8': '麦霸'
+          }
+          return config[abc]
+        }
       },
       {
         title: '生日',
@@ -100,6 +145,11 @@ export default class FormLogin extends React.Component {
         dataIndex: 'time'
       },
     ]
+    const { selectedRowKeys } = this.state;
+    const rowSelection = {
+      type: 'radio',
+      selectedRowKeys
+    }
     return (
       <div>
         <Card title="基础表格">
@@ -110,9 +160,25 @@ export default class FormLogin extends React.Component {
             pagination={false}
           />
         </Card>
-        <Card title="动态数据渲染表格" style={{margin: '10px 0'}}>
+        <Card title="动态数据渲染表格-Mock" style={{margin: '10px 0'}}>
           <Table
             bordered
+            columns={columns}
+            dataSource={this.state.dataSource2}
+            pagination={false}
+          />
+        </Card>
+        <Card title="Mock-单选" style={{margin: '10px 0'}}>
+          <Table
+            bordered
+            rowSelection={rowSelection}
+            onRow={(record, index) => {
+              return {
+                onClick: ()=>{
+                  this.onRowClick(record, index);
+                }
+              }
+            }}
             columns={columns}
             dataSource={this.state.dataSource2}
             pagination={false}
