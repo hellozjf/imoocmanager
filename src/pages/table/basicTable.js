@@ -1,11 +1,16 @@
 import React from 'react'
-import {Card, Table, Modal} from "antd";
+import {Card, Table, Modal, Button, message} from "antd";
 import axios from './../../axios/index'
+import Utils from "../../utils/utils";
 
 export default class FormLogin extends React.Component {
 
   state = {
     dataSource2: []
+  }
+
+  params = {
+    page: 1
   }
 
   componentDidMount() {
@@ -41,7 +46,7 @@ export default class FormLogin extends React.Component {
         time: '09:00'
       }
     ]
-    dataSource.map((item, index)=>{
+    dataSource.map((item, index) => {
       item.key = index;
     })
     this.setState({
@@ -52,21 +57,28 @@ export default class FormLogin extends React.Component {
 
   // 动态获取mock数据
   request = () => {
+    let _this = this;
     axios.ajax({
       url: '/table/list1',
       data: {
         params: {
-          page: 1
+          page: this.params.page
         },
         isShowLoading: false
       }
     }).then((res) => {
       if (res.code == 0) {
-        res.data.map((item, index) => {
+        res.result.list.map((item, index) => {
           item.key = index
         })
         this.setState({
-          dataSource2: res.data
+          dataSource2: res.result.list,
+          selectedRowKeys: [],
+          selectedRows: null,
+          pagination: Utils.pagination(res, (current) => {
+            _this.params.page = current;
+            this.request()
+          })
         })
       }
     });
@@ -75,8 +87,8 @@ export default class FormLogin extends React.Component {
   onRowClick = (record, index) => {
     let selectKey = [index];
     Modal.info({
-      title:'信息',
-      content:`用户名：${record.userName}, 用户爱好：${record.interest}`
+      title: '信息',
+      content: `用户名：${record.userName}, 用户爱好：${record.interest}`
     });
     this.setState({
       selectedRowKeys: selectKey,
@@ -145,10 +157,20 @@ export default class FormLogin extends React.Component {
         dataIndex: 'time'
       },
     ]
-    const { selectedRowKeys } = this.state;
+    const {selectedRowKeys} = this.state;
     const rowSelection = {
       type: 'radio',
       selectedRowKeys
+    }
+    const rowCheckSelection = {
+      type: 'checkbox',
+      selectedRowKeys,
+      onChange: (selectedRowKeys, selectedRows) => {
+        this.setState({
+          selectedRowKeys,
+          selectedRows,
+        })
+      }
     }
     return (
       <div>
@@ -174,7 +196,7 @@ export default class FormLogin extends React.Component {
             rowSelection={rowSelection}
             onRow={(record, index) => {
               return {
-                onClick: ()=>{
+                onClick: () => {
                   this.onRowClick(record, index);
                 }
               }
@@ -184,7 +206,43 @@ export default class FormLogin extends React.Component {
             pagination={false}
           />
         </Card>
+        <Card title="Mock-复选" style={{margin: '10px 0'}}>
+          <div style={{marginBottom: 10}}>
+            <Button onClick={this.handleDelete}>删除</Button>
+          </div>
+          <Table
+            bordered
+            rowSelection={rowCheckSelection}
+            columns={columns}
+            dataSource={this.state.dataSource2}
+            pagination={false}
+          />
+        </Card>
+        <Card title="Mock-表格分页" style={{margin: '10px 0'}}>
+          <Table
+            bordered
+            columns={columns}
+            dataSource={this.state.dataSource2}
+            pagination={this.state.pagination}
+          />
+        </Card>
       </div>
     );
+  }
+
+  handleDelete = () => {
+    let rows = this.state.selectedRows;
+    let ids = [];
+    rows.map((item) => {
+      ids.push(item.id);
+    });
+    Modal.confirm({
+      title: '删除提示',
+      content: `您确定要删除这些数据吗？${ids.join(',')}`,
+      onOk: () => {
+        message.success('删除成功');
+        this.request();
+      }
+    })
   }
 }
